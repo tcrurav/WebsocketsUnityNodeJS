@@ -9,10 +9,11 @@ let app = require('./http_server');
 // })
 
 let users = [{
-  name: "pepe",
-  position: {
-    x: 0,
-    y: 0
+  Name: "pepe",
+  Location: {
+    X: 3,
+    Y: 0,
+    Z: 3
   }
 }]
 
@@ -30,14 +31,18 @@ wss.on('connection', function connection(ws) {
     const stringMessage = data.toString('utf-8').trim();
     let message = JSON.parse(stringMessage);
 
-    switch (message.event) {
+    switch (message.Event) {
       case "set_nickname":
         console.log("set_nickname")
-        setNickname(message.msg);
+        // by the way I'm generating a random position
+        message.Payload.Location.X = Math.random() * 20;
+        message.Payload.Location.Y = 0;
+        message.Payload.Location.Z = Math.random() * 20;
+        setNickname(message.Payload);
         break;
       case "set_user_changed_position":
         console.log("set_user_changed_position")
-        userChangedPosition(message.msg);
+        userChangedPosition(message.Payload);
         break;
     }
   });
@@ -45,12 +50,13 @@ wss.on('connection', function connection(ws) {
 
 userChangedPosition = function (msg) {
   for (let i = 0; i < users.length; i++) {
-    if (user.name == msg.name) {
-      users[i].position.x = msg.position.x;
-      users[i].position.y = msg.position.y;
+    if (users[i].Name == msg.Name) {
+      users[i].Location.X = msg.Location.X;
+      users[i].Location.Y = msg.Location.Y;
+      users[i].Location.Z = msg.Location.Z;
       wss.broadcast({
-        event: "user_changed_position",
-        msg: users
+        Event: "user_changed_position",
+        Payload: users
       });
       return;
     }
@@ -58,20 +64,16 @@ userChangedPosition = function (msg) {
 };
 
 setNickname = function (user) {
-  console.log(user)
-  console.log(JSON.stringify(user))
   users.push(user);
-  console.log("setNickname")
-  console.log(users)
   wss.broadcast({
-    event: "new_user",
-    msg: users
+    Event: "new_user",
+    Payload: users
   });
 };
 
 wss.broadcast = function broadcast(msg) {
   wss.clients.forEach(function each(client) {
-    client.send(msg);
+    client.send(JSON.stringify(msg));
   });
 };
 
