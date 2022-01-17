@@ -39,6 +39,7 @@ Once you have cloned the project install all dependencies.
 ```
 cd WebsocketsUnityNodeJS/backend
 npm install
+```
 
 * For your backend part:
 You need a WebsocketsUnityNodeJS/backend/.env file with the IP where you run your NodeJS backend:
